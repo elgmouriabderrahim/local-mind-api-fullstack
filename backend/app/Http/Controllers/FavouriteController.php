@@ -11,26 +11,26 @@ class FavouriteController extends Controller
     public function index()
     {
         $favourites = auth()->user()->favourites()->with('question')->get();
-        return view('user.favourites', compact('favourites'));
+        return response()->json($favourites);
     }
 
     public function toggle(Question $question)
     {
         $user = auth()->user();
 
-        $favourite = favourite::where('user_id', $user->id)
+        $favourite = Favourite::where('user_id', $user->id)
                             ->where('question_id', $question->id)
                             ->first();
 
         if ($favourite) {
             $favourite->delete();
         } else {
-            favourite::create([
+            Favourite::create([
                 'user_id' => $user->id,
                 'question_id' => $question->id
             ]);
         }
 
-        return redirect()->back();
+        return response()->json(['message' => 'Favourite toggled successfully.']);
     }
 }

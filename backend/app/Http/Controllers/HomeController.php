@@ -8,11 +8,11 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $usersCount = User::count();
-        $questionsCount = Question::count();
-        $responsesCount = Response::count();
-        $favoritesCount = Favorite::count();
+        $stats = [
+            'users_count' => User::count(),
+            'questions_count' => Question::count(),
+        ];
 
-        return view('home', compact('usersCount', 'questionsCount', 'responsesCount', 'favoritesCount'));
+        return response()->json($stats);
     }
 }

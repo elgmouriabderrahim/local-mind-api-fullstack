@@ -28,12 +28,12 @@ class QuestionController extends Controller
 
         $questions = $query->paginate(10)->withQueryString();
 
-        return view('user.home', compact('questions'));
+        return response()->json($questions);
     }
 
     public function create()
     {
-        return view('user.create');
+        return response()->json(['message' => 'Create question form']);
     }
 
     public function store(Request $request)
@@ -50,13 +50,12 @@ class QuestionController extends Controller
             'title', 'content', 'location_name', 'latitude', 'longitude'
         ]));
 
-        return redirect()->route('home')
-            ->with('success', 'Question created successfully.');
+        return response()->json(['message' => 'Question created successfully.']);
     }
 
     public function show(Question $question)
     {
         $question->load('user', 'responses.user');
-        return view('user.question_show', compact('question'));
+        return response()->json($question);
     }
 }

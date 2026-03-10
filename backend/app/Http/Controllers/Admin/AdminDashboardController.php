@@ -11,12 +11,13 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $users_count = User::count();
-        $questions_count = Question::count();
-        $responses_count = Response::count();
+        $stats = [
+            'users_count' => User::count(),
+            'questions_count' => Question::count(),
+            'responses_count' => Response::count(),
+            'favorite_count' => Question::whereHas('favorites')->count(),
+        ];
 
-        $questions = Question::with('user')->latest()->paginate(10);
-
-        return view('admin.dashboard', compact('users_count', 'questions_count', 'responses_count', 'questions'));
+        return response()->json($stats);
     }
 }
