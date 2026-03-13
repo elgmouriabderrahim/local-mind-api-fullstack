@@ -1,21 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Question;
-use App\Models\Response;
+use App\Models\User;
 
-class AdminDashboardController extends Controller
+class HomeController extends Controller
 {
     public function index()
     {
         $stats = [
             'users_count' => User::count(),
             'questions_count' => Question::count(),
-            'responses_count' => Response::count(),
-            'favorite_count' => Question::whereHas('favorites')->count(),
         ];
 
         return response()->json($stats);
