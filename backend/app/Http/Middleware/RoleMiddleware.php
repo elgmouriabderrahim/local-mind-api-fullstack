@@ -9,12 +9,14 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role)
     {
-        if (!auth()->check()) {
-            return redirect()->route('login');
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        if (auth()->user()->role !== $role) {
-            abort(403);
+        if ($user->role !== $role) {
+            return response()->json(['message' => 'Forbidden.'], 403);
         }
 
         return $next($request);

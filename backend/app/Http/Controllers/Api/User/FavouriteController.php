@@ -10,7 +10,12 @@ class FavouriteController extends Controller
 {
     public function index()
     {
-        $favourites = auth()->user()->favourites()->with('question')->get();
+        $favourites = auth()->user()
+            ->favourites()
+            ->with(['question.user'])
+            ->latest()
+            ->get();
+
         return response()->json($favourites);
     }
 
@@ -24,13 +29,18 @@ class FavouriteController extends Controller
 
         if ($favourite) {
             $favourite->delete();
+            $isFavourited = false;
         } else {
             Favourite::create([
                 'user_id' => $user->id,
                 'question_id' => $question->id
             ]);
+            $isFavourited = true;
         }
 
-        return response()->json(['message' => 'Favourite toggled successfully.']);
+        return response()->json([
+            'message' => 'Favourite toggled successfully.',
+            'is_favourited' => $isFavourited,
+        ]);
     }
 }

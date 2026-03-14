@@ -2,41 +2,36 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    public function showRegisterForm()
-    {
-        return response()->json(['message' => 'Show registration form.']);
-    }
-
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        $validated = $request->validate([
+            'full_name' => 'nullable|string|max:50|required_without:name',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
+            'full_name' => $validated['full_name'] ?? $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
             'role' => 'user',
         ]);
 
-        Auth::login($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['message' => 'User registered and logged in successfully.']);
-    }
-
-    public function showLoginForm()
-    {
-        return response()->json(['message' => 'Show login form.']);
+        return response()->json([
+            'message' => 'User registered successfully.',
+            'token' => $token,
+            'user' => $user,
+        ], 201);
     }
 
     public function login(Request $request)
@@ -46,19 +41,24 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
-            return response()->json(['message' => 'User logged in successfully.']);
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return response()->json(['message' => 'The provided credentials do not match our records.'], 422);
         }
 
-        return response()->json(['error' => 'The provided credentials do not match our records.'], 422);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'User logged in successfully.',
+            'token' => $token,
+            'user' => $user,
+        ]);
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()?->delete();
 
         return response()->json(['message' => 'User logged out successfully.']);
     }

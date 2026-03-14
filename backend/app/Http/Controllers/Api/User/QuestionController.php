@@ -39,7 +39,9 @@ class QuestionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        Gate::authorize('create', Question::class);
+
+        $validated = $request->validate([
             'title' => 'required|string|max:100',
             'content' => 'required|string',
             'location_name' => 'nullable|string|max:255',
@@ -47,16 +49,43 @@ class QuestionController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
-        auth()->user()->questions()->create($request->only([
-            'title', 'content', 'location_name', 'latitude', 'longitude'
-        ]));
+        $question = auth()->user()->questions()->create($validated + [
+            'user_id' => auth()->id(),
+        ]);
 
-        return response()->json(['message' => 'Question created successfully.']);
+        $question->load('user');
+
+        return response()->json([
+            'message' => 'Question created successfully.',
+            'data' => $question,
+        ], 201);
+    }
+
+    public function update(Request $request, Question $question)
+    {
+        Gate::authorize('update', $question);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:100',
+            'content' => 'sometimes|required|string',
+            'location_name' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $question->update($validated);
+        $question->load('user', 'responses.user');
+
+        return response()->json([
+            'message' => 'Question updated successfully.',
+            'data' => $question,
+        ]);
     }
 
     public function show(Question $question)
     {
         $question->load('user', 'responses.user');
+
         return response()->json($question);
     }
 
