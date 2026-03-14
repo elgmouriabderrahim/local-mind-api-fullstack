@@ -15,7 +15,7 @@ class AdminDashboardController extends Controller
             'users_count' => User::count(),
             'questions_count' => Question::count(),
             'responses_count' => Response::count(),
-            'favorite_count' => Question::whereHas('favorites')->count(),
+            'favourites_count' => Question::whereHas('favourites')->count(),
         ];
 
         return response()->json($stats);
