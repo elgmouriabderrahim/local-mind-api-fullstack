@@ -9,7 +9,7 @@ import ResponsesView from '../views/ResponsesView.vue'
 import FavouritesView from '../views/FavouritesView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
-import { getAuthToken } from '../services/auth'
+import { getAuthToken, getStoredUser } from '../services/auth'
 
 const routes = [
   {
@@ -29,7 +29,7 @@ const routes = [
   {
     path: '/dashboard',
     component: DashboardView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, adminOnly: true }
   },
   {
     path: '/questions',
@@ -84,8 +84,12 @@ router.beforeEach((to) => {
     return '/login'
   }
 
+  if (to.meta.adminOnly && getStoredUser()?.role !== 'admin') {
+    return '/questions'
+  }
+
   if (to.meta.guestOnly && isLoggedIn) {
-    return '/dashboard'
+    return '/questions'
   }
 
   return true

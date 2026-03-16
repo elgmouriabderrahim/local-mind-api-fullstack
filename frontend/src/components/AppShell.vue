@@ -9,13 +9,17 @@ const router = useRouter()
 
 const user = computed(() => getStoredUser())
 
-const links = [
-  { to: '/dashboard', label: 'Dashboard' },
+const allLinks = [
+  { to: '/dashboard', label: 'Dashboard', adminOnly: true },
   { to: '/questions', label: 'Questions' },
   { to: '/responses', label: 'Responses' },
   { to: '/favourites', label: 'Favourites' },
   { to: '/profile', label: 'Profile' }
 ]
+
+const links = computed(() =>
+  allLinks.filter((link) => !link.adminOnly || user.value?.role === 'admin')
+)
 
 function isActive(path) {
   return route.path === path || route.path.startsWith(`${path}/`)
