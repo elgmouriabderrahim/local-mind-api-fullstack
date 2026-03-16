@@ -51,8 +51,9 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
     const fallback = response.status === 401
       ? 'Unauthorized. Please log in again.'
       : 'Request failed. Please try again.'
-
-    throw new Error(normalizeErrorMessage(payload, fallback))
+    const error = new Error(normalizeErrorMessage(payload, fallback))
+    error.status = response.status
+    throw error
   }
 
   return payload
@@ -91,10 +92,67 @@ export function getQuestions() {
   return request('/questions', { auth: true })
 }
 
+export function getQuestion(questionId) {
+  return request(`/questions/${questionId}`, { auth: true })
+}
+
+export function createQuestion(payload) {
+  return request('/questions', {
+    method: 'POST',
+    auth: true,
+    body: payload
+  })
+}
+
+export function updateQuestion(questionId, payload) {
+  return request(`/questions/${questionId}`, {
+    method: 'PUT',
+    auth: true,
+    body: payload
+  })
+}
+
+export function deleteQuestion(questionId) {
+  return request(`/questions/${questionId}`, {
+    method: 'DELETE',
+    auth: true
+  })
+}
+
 export function getResponses() {
   return request('/responses', { auth: true })
 }
 
+export function createResponse(questionId, payload) {
+  return request(`/questions/${questionId}/responses`, {
+    method: 'POST',
+    auth: true,
+    body: payload
+  })
+}
+
+export function updateResponse(responseId, payload) {
+  return request(`/responses/${responseId}`, {
+    method: 'PUT',
+    auth: true,
+    body: payload
+  })
+}
+
+export function deleteResponse(responseId) {
+  return request(`/responses/${responseId}`, {
+    method: 'DELETE',
+    auth: true
+  })
+}
+
 export function getFavourites() {
   return request('/favourites', { auth: true })
+}
+
+export function toggleFavourite(questionId) {
+  return request(`/questions/${questionId}/favourite`, {
+    method: 'POST',
+    auth: true
+  })
 }
